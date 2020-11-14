@@ -1,0 +1,236 @@
+---
+title: "Practical 01 SG: Descriptive analysis of genetic markers"
+author: "Write here your names and surnames"
+date: "Hand-in: 20/11/2020"
+output:
+  pdf_document: 
+    keep_tex: yes
+    fig_crop: no
+  html_document: default
+---
+
+Resolve the following exercise in groups of two students. Perform the computations and make the graphics that are asked for in the practical below. Take care to give each graph a title, and clearly label $x$ and $y$ axes, and to answer all questions asked. You can write your solution in a Word or Latex document and generate a pdf file with your solution, or generate a solution pdf file with R Markdown. Take care to number your 
+answers exactly as in this exercise. Upload your solution in **pdf format** to the web page of the course at raco.fib.upc.edu  no later than the hand-in date.
+
+You can make use of the R-package **genetics** (and other packages) to compute your answers, as you please. The first part of the practical is dedicated to the descriptive analysis of SNP data, whereas the second part is dedicated to the analysis of STR data. The datasets can be downloaded by clicking on their file names given below.
+
+# SNP dataset (10p)
+
+1. The file [CHDCHR22RAW.raw](http://www-eio.upc.es/~jan/data/bsg/CHDCHR22RAW.raw)
+contains all SNPs on chromosome 22 of a sample of Chinese individuals
+in Metropolitan Denver, CO, USA. This data has been extracted from the 1000 genomes project at [www.internationalgenome.org](http://www.internationalgenome.org) .
+
+2. Load this data into the R environment, with the `read.table` instruction. The first six columns contain non-genetical information. Extract the variables individual ID (the second column IID) and the sex of the individual (the 5th column sex). Create a dataframe that only contains the genetic information that is in and beyond the 7th column. Notice that the genetic variants are identifed by an "rs" identifier. The genetic data is coded in the (0, 1, 2) format with 0=AA, 1=AB, 2=BB.  
+
+3. (1p) How many variants are there in this database? What percentage of the data is missing? How many individuals in the database are males and how many are females? 
+
+```{r}
+
+dataset = read.table("CHDCHR22.raw")
+
+ids = dataset[,2]
+ids = ids[2:length(ids)]
+sexes = dataset[,5]
+sexes = sexes[2:length(sexes)]
+
+genetic_dataset = data.frame(dataset[,7:ncol(dataset)])
+names = genetic_dataset[1,]
+genetic_dataset = data.frame(genetic_dataset[2:nrow(genetic_dataset),])
+names(genetic_dataset) = names
+
+# Number of variants
+num_var = ncol(genetic_dataset)
+num_var
+
+# Percentage of data missing
+genetic_dataset[genetic_dataset == -9] <- NA
+nmis = sum(is.na(genetic_dataset))
+percentage_missing = nmis / (nrow(genetic_dataset) * ncol(genetic_dataset))
+percentage_missing
+
+# Number of ales and females
+male_sign = 1
+female_sign = 2
+n_male = sum(sexes==male_sign)
+n_female = sum(sexes==female_sign)
+
+
+
+```
+
+4. (1p) Calculate the percentage of monomorphic variants. Exclude all monomorphics from the database for all posterior computations of the practical. How many variants do remain in your database? 
+
+
+``` {r 4th}
+
+genetic_dataset_non_monomorphic = NULL
+
+for(i in 1:ncol(genetic_dataset)) {
+  is_monomorphic = length(unique(genetic_dataset[,i])) == 1
+  if (is_monomorphic == FALSE) {
+    col_name = names(genetic_dataset)[i]
+    # add to dataframe
+    if(is.null(genetic_dataset_non_monomorphic)) {
+      genetic_dataset_non_monomorphic = data.frame(genetic_dataset[,i])
+      names(genetic_dataset_non_monomorphic) = c(col_name)
+    } else {
+      names_before = names(genetic_dataset_non_monomorphic)
+      genetic_dataset_non_monomorphic = cbind(genetic_dataset_non_monomorphic, data.frame(genetic_dataset[,i]))
+      names(genetic_dataset_non_monomorphic) = append(names_before, col_name)
+    }
+  }
+}
+
+
+# There are 13192 Variants remaining in my database
+ncol(genetic_dataset_non_monomorphic)
+
+```
+
+5. (1p) Report the genotype counts and the minor allele count of polymorphism rs3729688_G, and calculate the MAF of this variant.
+
+``` {r 5th}
+library(genetics)
+
+maf <- function(x){
+  x[x == 0] = "AA"
+  x[x == 1] = "AB"
+  x[x == 2] = "BB"
+  x <- genotype(x,sep="")
+  out <- summary(x)
+  af1 <- min(out$allele.freq[,2],na.rm=TRUE)
+  af1[af1==1] <- 0
+  return(af1)
+}
+
+snp1 = genetic_dataset_non_monomorphic[,c("rs3729688_G")]
+snp1[snp1 == 0] = "AA"
+snp1[snp1 == 1] = "AB"
+snp1[snp1 == 2] = "BB"
+snp1.g = genotype(snp1,sep="")
+
+out = summary(snp1.g)
+out$allele.freq[,1]
+
+maf(snp1)
+
+```
+
+6. (2p) Compute the minor allele frequencies (MAF) for all markers, and make a histogram of it. Does the MAF follow a uniform distribution? What percentage of the markers have a MAF below 0.05? And below 0.01? Can you explain the observed pattern? 
+
+``` {r 6th}
+
+maf.per.snp <- apply(genetic_dataset_non_monomorphic,2,maf)
+hist(maf.per.snp)
+# MAF does not follow normal distribution, it looks more uniform than normal
+
+sum(maf.per.snp < 0.05) / length(maf.per.snp)
+sum(maf.per.snp < 0.01) / length(maf.per.snp)
+
+# Explanation for this pattern
+# there is a lot more markers which have near monomorphic constitution
+
+```
+
+7. (2p) Calculate the minor allele frequency for males and for females and present a scatterplot of these variables. What do you observe? Calculate and report their correlation coefficient. 
+
+``` {r 7th}
+
+maf.male <- function(x){
+  male_mask = sexes == male_sign
+  x = x[male_mask]
+  af1 = maf(x)
+  return(af1)
+}
+
+maf.female <- function(x){
+  female_mask = sexes == female_sign
+  x = x[female_mask]
+  af1 = maf(x)
+  return(af1)
+}
+
+maf.per.snp.male = apply(genetic_dataset_non_monomorphic, 2, maf.male)
+maf.per.snp.female = apply(genetic_dataset_non_monomorphic, 2, maf.female)
+
+plot(maf.per.snp.male, maf.per.snp.female)
+cor(maf.per.snp.male, maf.per.snp.female)
+
+```
+
+8. (1p) Calculate the observed heterozygosity ($H_o$), and make a histogram of it. What is, theoretically, the range of variation of this statistic?
+
+```{r 8th}
+
+h.observed <- function(x) {
+  x[x == 0] = "AA"
+  x[x == 1] = "AB"
+  x[x == 2] = "BB"
+  x <- genotype(x,sep="")
+  out <- summary(x)
+  h.o = out$genotype.freq[,2]["A/B"]
+  if(is.na(h.o)) {
+    return(0.0)
+  }
+  return(h.o)
+}
+
+# Observed heterozygosity is genotype frequency f_AB
+obs.heterozygosity = apply(genetic_dataset_non_monomorphic, 2, h.observed)
+hist(obs.heterozygosity)
+
+# What is theoretically the range of variation of this statistic
+# Answer this
+
+```
+
+9. (2p) Compute for each marker its expected heterozygosity ($H_e$), where the expected heterozygosity for a bi-allelic marker is defined
+as $1 - \sum_{i=1}^k p_i^2$, where $p_i$ is the frequency of the $i$th allele. Make a histogram of the expected heterozygosity.  What is, theoretically, the range of variation of this statistic? 
+What is the average of $H_e$ for this database?
+
+``` {r 9th}
+
+h.expected <- function(x) {
+  x[x == 0] = "AA"
+  x[x == 1] = "AB"
+  x[x == 2] = "BB"
+  x <- genotype(x,sep="")
+  out <- summary(x)
+  
+  res = 1.0
+  for(p in out$allele.freq[,2]) {
+    res = res - p*p
+  }
+  
+  return(res)
+}
+
+# Expected heterozygosity for all markers
+hetero.expected = apply(genetic_dataset_non_monomorphic, 2, h.expected)
+hist(hetero.expected)
+
+# Average heterozygosity
+avg.hetero = sum(hetero.expected) / length(hetero.expected)
+avg.hetero
+
+```
+
+# STR dataset (10p)
+
+1. The file [FrenchStrs.dat](http://www-eio.upc.es/~jan/data/bsg/FrenchStrs.dat) contains genotype information (STRs) of individuals from a French
+population. The first column of the data set contains an identifier the individual. STR data starts at the second column. Load this data into the R environment.
+
+2. (1p) How many individuals and how many STRs contains the database? 
+
+3. (1p) The value $-9$ indicates a missing value. Replace all missing values by NA. What percentage of the total amount of datavalues is missing? 
+
+4. (2p) Write a function that determines the number of alleles for a STR. Determine the number of alleles for each STR in the database. Compute basic descriptive statistics of the number of alleles (mean, standard
+deviation, median, minimum, maximum).
+
+5. (2p) Make a table with the number of STRs for a given number of alleles and present a barplot of the number STRs in each category. What is the most common number of alleles
+for an STR? 
+
+6. (2p) Compute the expected heterozygosity for each STR. Make a histogram of the expected heterozygosity over all STRS. Compute the average expected heterozygosity over all STRs.
+
+7. (2p) Compare the results you obtained for the SNP database with those you obtained for the STR database. What differences do you observe between these two types of genetic markers? 
+

@@ -238,17 +238,104 @@ The average expected heterozygosity for this data-set is 0.2985.
 1. The file [FrenchStrs.dat](http://www-eio.upc.es/~jan/data/bsg/FrenchStrs.dat) contains genotype information (STRs) of individuals from a French
 population. The first column of the data set contains an identifier the individual. STR data starts at the second column. Load this data into the R environment.
 
+``` {r str1st}
+
+French = read.table("FrenchStrs.dat")
+dataset = French[,2:ncol(French)]
+
+
+```
+
 2. (1p) How many individuals and how many STRs contains the database? 
 
+```{r str2nd}
+
+n = nrow(dataset) / 2 # 2 rows for each individual
+n
+
+```
+
 3. (1p) The value $-9$ indicates a missing value. Replace all missing values by NA. What percentage of the total amount of datavalues is missing? 
+
+``` {r str3rd}
+
+dataset[dataset == -9] = NA
+
+n.mis = sum(is.na(dataset))
+n.total = nrow(dataset) * (ncol(dataset))
+
+perc.mis = n.mis / n.total
+
+```
 
 4. (2p) Write a function that determines the number of alleles for a STR. Determine the number of alleles for each STR in the database. Compute basic descriptive statistics of the number of alleles (mean, standard
 deviation, median, minimum, maximum).
 
-5. (2p) Make a table with the number of STRs for a given number of alleles and present a barplot of the number STRs in each category. What is the most common number of alleles
-for an STR? 
+``` {r str4th}
+
+n.alleles <- function(x) {
+  y <- length(unique(x[!is.na(x)]))
+  return(y)
+}
+
+n.alleles.per.STR = apply(dataset, 2, n.alleles)
+
+var(n.alleles.per.STR)
+summary(n.alleles.per.STR)
+
+boxplot(n.alleles.per.STR, main='Box plot of number of alleles per STR', ylab='Number of alleles')
+
+```
+
+5. (2p) Make a table with the number of STRs for a given number of alleles and present a barplot of the number STRs in each category. What is the most common number of alleles for an STR? 
+
+```{r str5th}
+
+allele.counts = unique(n.alleles.per.STR)
+allele.counts
+
+str.counts = c()
+
+for(c in allele.counts) {
+  num = sum(n.alleles.per.STR == c)
+  str.counts = append(str.counts, num)
+}
+
+barplot(str.counts, names.arg=allele.counts, main='Number of STRs for specified number of alleles', xlab='Number of alleles', ylab='Frequency')
+
+# Most common allele count is 6
+
+```
 
 6. (2p) Compute the expected heterozygosity for each STR. Make a histogram of the expected heterozygosity over all STRS. Compute the average expected heterozygosity over all STRs.
 
+```{r str6th}
+
+h.expected.str <- function(x) {
+  x = x[!is.na(x)]
+  tbl = table(x)
+  total = sum(tbl)
+  result = 1.0
+  for(t in tbl) {
+    result = result - (t/total)^2
+  }
+  return(result)
+}
+
+h.expected.str(dataset[,1])
+
+h.expected.per.STR = apply(dataset, 2, h.expected.str)
+h.expected.per.STR
+
+summary(h.expected.per.STR)
+hist(h.expected.per.STR, main='Histogram of Expected Heterozygosity per STR', xlab='Expected heterozygosity per STR')
+
+```
+
 7. (2p) Compare the results you obtained for the SNP database with those you obtained for the STR database. What differences do you observe between these two types of genetic markers? 
 
+```{r str7th}
+
+
+
+```

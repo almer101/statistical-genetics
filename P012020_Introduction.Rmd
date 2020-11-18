@@ -1,12 +1,12 @@
 ---
 title: "Practical 01 SG: Descriptive analysis of genetic markers"
-author: "Write here your names and surnames"
+author: "Ivan Almer, Lovro Katalinić"
 date: "Hand-in: 20/11/2020"
 output:
+  html_document: default
   pdf_document: 
     keep_tex: yes
     fig_crop: no
-  html_document: default
 ---
 
 Resolve the following exercise in groups of two students. Perform the computations and make the graphics that are asked for in the practical below. Take care to give each graph a title, and clearly label $x$ and $y$ axes, and to answer all questions asked. You can write your solution in a Word or Latex document and generate a pdf file with your solution, or generate a solution pdf file with R Markdown. Take care to number your 
@@ -40,31 +40,28 @@ names(genetic_dataset) = names
 
 # Number of variants
 num_var = ncol(genetic_dataset)
-num_var
+cat(paste('Number of variants:', num_var, '\n'))
 
 # Percentage of data missing
 genetic_dataset[genetic_dataset == -9] <- NA
 nmis = sum(is.na(genetic_dataset))
 percentage_missing = nmis / (nrow(genetic_dataset) * ncol(genetic_dataset))
-percentage_missing
+cat(paste('Percentage of data missing:', percentage_missing, '%\n'))
 
 # Number of ales and females
 male_sign = 1
 female_sign = 2
 n_male = sum(sexes==male_sign)
 n_female = sum(sexes==female_sign)
-
+cat(paste('Male individuals: ', n_male, '\nFemale individuals: ', n_female))
 
 ```
-
-Number of variants is 16393 and no data is missing (0%). There is 50 males and 59 females in the dataset.
 
 
 4. (1p) Calculate the percentage of monomorphic variants. Exclude all monomorphics from the database for all posterior computations of the practical. How many variants do remain in your database? 
 
 
 ``` {r 4th}
-
 genetic_dataset_non_monomorphic = NULL
 
 for(i in 1:ncol(genetic_dataset)) {
@@ -86,16 +83,15 @@ for(i in 1:ncol(genetic_dataset)) {
 
 # There are 13192 Variants remaining in my database
 perc = 1 - ncol(genetic_dataset_non_monomorphic) / ncol(genetic_dataset)
-perc
-ncol(genetic_dataset_non_monomorphic)
-
+cat(paste('Percentage of monomorphic variants: ', perc, '\n'))
+cat(paste('Number of variants after excluding monomorphics: ', ncol(genetic_dataset_non_monomorphic)))
 ```
 
-The percentage of monomorphic variants in the dataset is 19.5%. After excluding all monomorphic variants there are 13192 variants left.
+
 
 5. (1p) Report the genotype counts and the minor allele count of polymorphism rs3729688_G, and calculate the MAF of this variant.
 
-``` {r 5th}
+``` {r 5th, echo=FALSE}
 library(genetics)
 
 maf <- function(x){
@@ -106,7 +102,7 @@ maf <- function(x){
   out <- summary(x)
   af1 <- min(out$allele.freq[,2],na.rm=TRUE)
   af1[af1==1] <- 0
-  return(af1)
+  af1
 }
 
 snp1 = genetic_dataset_non_monomorphic[,c("rs3729688_G")]
@@ -115,14 +111,12 @@ snp1[snp1 == 1] = "AB"
 snp1[snp1 == 2] = "BB"
 snp1.g = genotype(snp1,sep="")
 
-out = summary(snp1.g)
-out$allele.freq[,1]
+(out = summary(snp1.g))
 
-maf(snp1)
+cat(paste('\nMAF of variant:', maf(snp1)))
 
 ```
 
-There are 119 alleles of type A and 99 alleles of type B in the variant. MAF of this variant is 0.454.
 
 6. (2p) Compute the minor allele frequencies (MAF) for all markers, and make a histogram of it. Does the MAF follow a uniform distribution? What percentage of the markers have a MAF below 0.05? And below 0.01? Can you explain the observed pattern? 
 
@@ -131,16 +125,11 @@ There are 119 alleles of type A and 99 alleles of type B in the variant. MAF of 
 maf.per.snp <- apply(genetic_dataset_non_monomorphic,2,maf)
 hist(maf.per.snp, main="Histogram of MAF for all markers", xlab="MAF", ylab="Count")
 
-sum(maf.per.snp < 0.05) / length(maf.per.snp)
-sum(maf.per.snp < 0.01) / length(maf.per.snp)
-
-# Explanation for this pattern
-# there is a lot more markers which have near monomorphic constitution
-
+cat(paste('Percentage of markers with MAF below the 0.05: ', sum(maf.per.snp < 0.05) / length(maf.per.snp), '\n'))
+cat(paste('Percentage of markers with MAF below the 0.01: ', sum(maf.per.snp < 0.01) / length(maf.per.snp), '\n'))
 ```
 
-The MAF more or less follows uniform distribution, at least visually. It is not perfect since there is substantial number of vairants with MAF below 0.1. There is 15.9% of variants with MAF below 0.05, and 6% variants with MAF below 0.01. 
-What this means is that there are a lot more variants with near-monomorphic constitution.
+The MAF more or less follows uniform distribution, at least visually. It is not perfect since there is substantial number of variants with MAF below 0.1. There is 15.9% of variants with MAF below 0.05, and 6% variants with MAF below 0.01.What this means is that there are a lot more variants with near-monomorphic constitution.
 
 
 7. (2p) Calculate the minor allele frequency for males and for females and present a scatterplot of these variables. What do you observe? Calculate and report their correlation coefficient. 
@@ -165,7 +154,7 @@ maf.per.snp.male = apply(genetic_dataset_non_monomorphic, 2, maf.male)
 maf.per.snp.female = apply(genetic_dataset_non_monomorphic, 2, maf.female)
 
 plot(maf.per.snp.male, maf.per.snp.female, main="MAF of males against MAF of females (each dot represents one variant)", xlab="MAF female", ylab="MAF male")
-cor(maf.per.snp.male, maf.per.snp.female)
+cat(paste('Correlation coefficient between male and female minor MAFs: ', cor(maf.per.snp.male, maf.per.snp.female)))
 
 ```
 
@@ -191,10 +180,6 @@ h.observed <- function(x) {
 # Observed heterozygosity is genotype frequency f_AB
 obs.heterozygosity = apply(genetic_dataset_non_monomorphic, 2, h.observed)
 hist(obs.heterozygosity)
-
-# What is theoretically the range of variation of this statistic
-# Answer this
-
 ```
 
 Theoretically the variation of this statistic can be in interval [0, 1.0] because H_o = f_AB, and f_AB can have frequency of 0 and also frequency of 1.0.
@@ -226,12 +211,11 @@ hist(hetero.expected)
 
 # Average heterozygosity
 avg.hetero = sum(hetero.expected) / length(hetero.expected)
-avg.hetero
+cat(paste('The average H_e for this database is :', avg.hetero))
 
 ```
 
-Theoretically the variation of this statistic depends on number of alleles. In this case it can be in interval [0,0.5]. But in case of 4 alleles it can be anywhere between [0, 0.25]. 
-The average expected heterozygosity for this data-set is 0.2985.
+Theoretically the variation of this statistic depends on number of alleles. In this case it can be in interval [0,0.5]. But in case of 4 alleles it can be anywhere between [0, 0.75].  The average expected heterozygosity for this data-set is 0.2985.
 
 # STR dataset (10p)
 
@@ -243,7 +227,6 @@ population. The first column of the data set contains an identifier the individu
 French = read.table("FrenchStrs.dat")
 dataset = French[,2:ncol(French)]
 
-
 ```
 
 2. (1p) How many individuals and how many STRs contains the database? 
@@ -251,7 +234,9 @@ dataset = French[,2:ncol(French)]
 ```{r str2nd}
 
 n = nrow(dataset) / 2 # 2 rows for each individual
-n
+strs = ncol(dataset)
+cat(paste('Number of individuals: ', n, '\n'))
+cat(paste('Number of STRs: ', strs))
 
 ```
 
@@ -265,22 +250,22 @@ n.mis = sum(is.na(dataset))
 n.total = nrow(dataset) * (ncol(dataset))
 
 perc.mis = n.mis / n.total
+cat(paste('Percentage of missing values: ', round(perc.mis*100, 2), '%\n'))
 
 ```
 
-4. (2p) Write a function that determines the number of alleles for a STR. Determine the number of alleles for each STR in the database. Compute basic descriptive statistics of the number of alleles (mean, standard
-deviation, median, minimum, maximum).
+4. (2p) Write a function that determines the number of alleles for a STR. Determine the number of alleles for each STR in the database. Compute basic descriptive statistics of the number of alleles (mean, standard deviation, median, minimum, maximum).
 
 ``` {r str4th}
 
 n.alleles <- function(x) {
-  y <- length(unique(x[!is.na(x)]))
-  return(y)
+  length(unique(x[!is.na(x)]))
 }
 
 n.alleles.per.STR = apply(dataset, 2, n.alleles)
 
-var(n.alleles.per.STR)
+cat(paste('Standard deviation: ', sd(n.alleles.per.STR), '\n'))
+cat('Other descriptive statistics: \n')
 summary(n.alleles.per.STR)
 
 boxplot(n.alleles.per.STR, main='Box plot of number of alleles per STR', ylab='Number of alleles')
@@ -291,9 +276,7 @@ boxplot(n.alleles.per.STR, main='Box plot of number of alleles per STR', ylab='N
 
 ```{r str5th}
 
-allele.counts = unique(n.alleles.per.STR)
-allele.counts
-
+allele.counts = sort(unique(n.alleles.per.STR))
 str.counts = c()
 
 for(c in allele.counts) {
@@ -302,10 +285,10 @@ for(c in allele.counts) {
 }
 
 barplot(str.counts, names.arg=allele.counts, main='Number of STRs for specified number of alleles', xlab='Number of alleles', ylab='Frequency')
-
-# Most common allele count is 6
-
 ```
+
+Most common number of alleles for a STR is 6.
+
 
 6. (2p) Compute the expected heterozygosity for each STR. Make a histogram of the expected heterozygosity over all STRS. Compute the average expected heterozygosity over all STRs.
 
@@ -319,23 +302,24 @@ h.expected.str <- function(x) {
   for(t in tbl) {
     result = result - (t/total)^2
   }
-  return(result)
+  result
 }
 
-h.expected.str(dataset[,1])
 
 h.expected.per.STR = apply(dataset, 2, h.expected.str)
-h.expected.per.STR
+he.df <- data.frame(h.expected.per.STR)
+names(he.df)=c('Expected heterozygosity')
+(he.df)
 
-summary(h.expected.per.STR)
+
 hist(h.expected.per.STR, main='Histogram of Expected Heterozygosity per STR', xlab='Expected heterozygosity per STR')
+cat(paste('Average expected heterozygosity over all STR: ', mean(h.expected.per.STR)))
 
 ```
+
 
 7. (2p) Compare the results you obtained for the SNP database with those you obtained for the STR database. What differences do you observe between these two types of genetic markers? 
 
-```{r str7th}
+When comparing SNP and STR databases, we can observe that SNP database has much more variants (16393) then STR database (678). While the SNP database does not have any missing values, there is 4.2% of data missing in the STR database.
 
-
-
-```
+Variants of SNP contain only 2 different alleles and therefore 3 different genotypes, while average number of alleles in STR variants is around 6. Higher number of alleles is the reason why STR's expected heterozygosity can theoretically be and is higher than SNP's.

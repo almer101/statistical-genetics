@@ -63,7 +63,7 @@ count_genotypes <- function(variant) {
 
 # Counting genotypes of 'rs587756191_T'
 variant <- dataset_poly[,c('rs587756191_T')]
-count_genotypes(variant)
+counts <- count_genotypes(variant)
 
 # HW equilibrium tests
 HWChisq(counts)
@@ -85,30 +85,146 @@ genotype_counts[1:20,]
 
 5. (1p) Apply a chi-square test without continuity correction for Hardy-Weinberg equilibrium to each SNP. You can use `HWChisqStats` for this purpose. How many SNPs are significant (use $\alpha = 0.05$)? 
 
+```{r 5th}
+
+pvalues_chi <- HWChisqStats(genotype_counts, pvalues=TRUE)
+pvalues_significant_chi <- pvalues_chi[pvalues_chi <= 0.05]
+cat(paste('There are', length(pvalues_significant_chi), 'significant SNPs out of', length(pvalues_chi)))
+
+```
+
 6.  (1p) How many markers of the remaining non-monomorphic markers would you expect to be out of equilibrium by the effect of chance alone? 
+
+```{r 6th}
+
+```
 
 7.  (2p) Which SNP is most significant according to the chi-square test results? Give it genotype counts. In which sense is this genotypic composition unusual?
 
+```{r 7th}
+
+most_significant_index <- which.min(pvalues_chi)
+genotype_counts[most_significant_index,]
+
+```
+It is unusual because all genotypes of this SNPs are equal to AA besides one which is BB.
+
 8. (1p) Apply an Exact test for Hardy-Weinberg equilibrium to each SNP. You can use function `HWExactStats` for fast computation. How many SNPs are significant (use $\alpha = 0.05$). Is the result consistent with the chi-square test? 
 
+```{r 8th}
+
+pvalues_exact <- HWExactStats(genotype_counts)
+pvalues_significant_exact <- pvalues_exact[pvalues_exact <= 0.05]
+cat(paste('There are', length(pvalues_significant_exact), 'significant SNPs out of', length(pvalues_exact)))
+
+```
+The number of significant SNPs given by an Exact test is smaller than the one given by a chi-square test, but if we compare it to the total number of SNPs, we can say that it is similar.
+
 9. (2p) Which SNP is most significant according to the exact test results? Give its genotype counts. In which sense is this genotypic composition unusual?
+
+```{r 9th}
+
+most_significant_index <- which.min(pvalues_exact)
+genotype_counts[most_significant_index,]
+
+```
+This genotypic composition is unusual because it has almost equal number of AA and BB genotypes, but none of AB genotypes.
 
 10. (1p) Apply a likelihood ratio test for Hardy-Weinberg equilibrium to each SNP, using the `HWLratio` function. How many SNPs are significant
 (use $\alpha = 0.05$). Is the result consistent with the chi-square test? 
 
+```{r 10th}
+
+pvalues_likelihood <- apply(genotype_counts, 1, function(x) HWLratio(x, verbose=FALSE)$pval)
+pvalues_significant_likelihood <- pvalues_likelihood[pvalues_likelihood <= 0.05]
+cat(paste('There are', length(pvalues_significant_likelihood), 'significant SNPs out of', length(pvalues_likelihood)))
+
+```
+
+The result of the likelihood ratio test is much closer to chi-square test then exact test was. Likelihood ratio test estimated 7955 significant values, and chi-square test estimated 8162 of them.
+
 11. (1p) Apply a permutation test for Hardy-Weinberg equilibrium to the first 10 SNPs, using the classical chi-square test (without continuity correction) as a test statistic. 
 List the 10 p-values, together with the 10 p-values of the exact tests. Are the result consistent? 
 
+```{r 11th}
+
+pvalues_perm_head <- apply(genotype_counts[1:10,], 1, function(x) HWPerm(x, verbose=FALSE)$pval)
+pvalues_exact_head <- pvalues_exact[1:10]
+rbind(pvalues_perm_head, pvalues_exact_head)
+
+```
+
+Not all p-values are consisent. We can see that all besides p-values of variant **rs62224609_C** are close.
+
 12. (1p) Depict all SNPs simultaeneously in a ternary plot with function `HWTernaryPlot` and comment on your result (because many genotype counts repeat, you may use `UniqueGenotypeCounts` to speed up the computations)
+
+```{r 12th}
+
+unique_genotype_counts <- UniqueGenotypeCounts(genotype_counts)[1:3]
+HWTernaryPlot(unique_genotype_counts)
+
+```
 
 13. (1p) Can you explain why half of the ternary diagram is empty? 
 
+
+
 14. (2p) Make a histogram of the $p$-values obtained in the chi-square test. What distribution would you expect if HWE would hold for the data set? Make a Q-Q plot of the $p$ values obtained in the chi-square test against the quantiles of the distribution that you consider relevant. What is your conclusion?. 
+
+```{r 14th}
+
+hist(pvalues_chi)
+
+```
+
+If HWE would hold for the whole data set, we would expect ...
 
 15. (1p) Imagine that for a particular marker the counts of the two homozygotes are accidentally interchanged. Would this affect the statistical tests for HWE? Try it on the computer if you want. Argue your answer.
 
+```{r 15th}
+counts <- c(AA=40, AB=10, BB=15)
+HWChisq(counts)
+
+interchanged_counts <- c(AA=15, AB=10, BB=40)
+HWChisq(interchanged_counts)
+```
+
+If counts of two homozygotes were accidentally interchanged, it wouldn't affect the statistical test for HWE. Switching counts of two homozygotes also switches the probabilities p and q, which does not change the test value. It can be seen if we observe formula for Chi-squared test (on slide 19 from the lesson's PDF). Heterozygote count does not change, so the nominator stays equal. Denominator consists of factor *p-squared*, *q-squared* and *n* and stays equal if we switch p and q values.
+
+
 16. (3p) Compute the inbreeding coefficient ($\hat{f}$) for each SNP, and make a histogram of $\hat{f}$. You can use function `HWf` for this purpose. Give descriptive statistics (mean, standard deviation, etc) of $\hat{f}$ calculated over the set of SNPs. What distribution do you expect $\hat{f}$ to follow theoretically? Use a probability plot to confirm your idea.
+
+```{r 16th}
+fs <- HWf(as.matrix(genotype_counts))
+hist(fs)
+cat(paste('Mean:', mean(fs), '\nStandard deviation:', sd(fs), '\nMedian:', median(fs), '\nMin:', min(fs), '\nMax:', max(fs)))
+```
 
 17. (2p) Make a plot of the observed chi-square statistics against the inbreeding coefficient ($\hat{f}$). What do you observe? Can you give an equation that relates the two statistics? 
 
+```{r 17th}
+
+plot(pvalues_chi, fs)
+
+```
+We can observe that p-values are closer to zero as inbreeding coefficient is further from zero, and vice versa. That makes sense, because low p-value indicates that variant is not in equilibrium, and it happens when there are no heterozygotes (f = 1) or much more heterozygotes than homozygotes (f = -1).
+
 18. (2p) We reconsider the exact test for HWE, using different significant levels. Report the number and percentage of significant variants using an exac test for HWE with $\alpha = 0.10, 0.05, 0.01$ and 0.001. State your conclusions.
+
+```{r 18th}
+
+get_significant_percentage <- function(pvalues, alpha) {
+  significant <- pvalues[pvalues <= alpha]
+  length(significant) / length(pvalues)
+}
+
+significant_percentages <- c(get_significant_percentage(pvalues_exact, 0.10),
+                             get_significant_percentage(pvalues_exact, 0.05),
+                             get_significant_percentage(pvalues_exact, 0.01),
+                             get_significant_percentage(pvalues_exact, 0.001))
+names(significant_percentages) <- c('0.1', '0.05', '0.01', '0.001')
+significant_percentages
+
+```
+
+We can see that percentage of significant variants decreases as alpha is approaching zero.

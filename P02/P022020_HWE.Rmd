@@ -97,6 +97,10 @@ cat(paste('There are', length(pvalues_significant_chi), 'significant SNPs out of
 
 ```{r 6th}
 
+chance = length(pvalues_significant_chi) / length(pvalues_chi )
+chance
+
+cat(paste('We would expect to see', round(chance * 100, digits = 3), '% of markers to be out of equilibrium. '))
 ```
 
 7.  (2p) Which SNP is most significant according to the chi-square test results? Give it genotype counts. In which sense is this genotypic composition unusual?
@@ -167,17 +171,25 @@ HWTernaryPlot(unique_genotype_counts)
 
 13. (1p) Can you explain why half of the ternary diagram is empty? 
 
-
+Discussing the possibilities why the right part of the ternary diagram is empty we came to the conclusion that A is probably always taken as the more frequent allele and thus there is no way when BB could be a more frequent case than AA.
 
 14. (2p) Make a histogram of the $p$-values obtained in the chi-square test. What distribution would you expect if HWE would hold for the data set? Make a Q-Q plot of the $p$ values obtained in the chi-square test against the quantiles of the distribution that you consider relevant. What is your conclusion?. 
 
 ```{r 14th}
 
-hist(pvalues_chi)
+hist(pvalues_chi, freq=FALSE)
+curve (dbeta(x, shape1 = 80, shape2 = 3), add=TRUE, col="red")
+
+x_qbeta <- seq(0, 1, length.out = length(pvalues_chi))
+y_qbeta <- rbeta(x_qbeta, shape1 = 80, shape2 = 3)
+
+qqplot(pvalues_chi, y_qbeta, main="Q-Q plot", xlab = "P-values", ylab = "Beta distribution quantiles")
 
 ```
 
-If HWE would hold for the whole data set, we would expect ...
+If HWE would hold for the whole data set, we would expect that the left part of the histogram (below 0.05) is 0, i.e. that no row has p-value below 0.05. Ideally we would expect the mass of the histogram to shift as far right as possible.
+
+This histogram is shaped like some very skewed distribution with heavy left tail. We could not find some distribution with a heavy tail like this, do the best fit for this is beta distribution with parameters alpha = 80 and beta = 3. Q-Q plot is presented in the plot, we see that in the middle there is linear behavior, but coming closer to each end of the curve the points start to deviate significantly from the line.
 
 15. (1p) Imagine that for a particular marker the counts of the two homozygotes are accidentally interchanged. Would this affect the statistical tests for HWE? Try it on the computer if you want. Argue your answer.
 

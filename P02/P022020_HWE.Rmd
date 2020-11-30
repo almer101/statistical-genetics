@@ -1,6 +1,6 @@
 ---
 title: "Practical 02 SG: Hardy-Weinberg equilibrium"
-author: "Write here your names and surnames"
+author: "Lovro Katalinić and Ivan Almer"
 date: "Hand-in: 30/11/2020"
 output:
   pdf_document: 
@@ -26,7 +26,7 @@ dataset <- fread('TSIChr22v4.raw', data.table=FALSE)
 
 # Remove leading columns and display data
 dataset <- dataset[-c(1:6)]
-head(dataset[1:8])
+#head(dataset[1:8])
 
 ```
 

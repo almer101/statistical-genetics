@@ -208,9 +208,11 @@ If counts of two homozygotes were accidentally interchanged, it wouldn't affect 
 
 ```{r 16th}
 fs <- HWf(as.matrix(genotype_counts))
-hist(fs)
+hist(fs, freq=FALSE)
+curve (dnorm(x, -0.05, 0.05), add=TRUE, col="red")
 cat(paste('Mean:', mean(fs), '\nStandard deviation:', sd(fs), '\nMedian:', median(fs), '\nMin:', min(fs), '\nMax:', max(fs)))
 ```
+Considering that the mean and the median are very similar values, and looking at the histogram, it seems that inbreeding coefficients follow normal distribution. Distribution with parameters N(-0.05, 0.05) seems to make a good explanation of inbreeding coefficients distribution of this data set. 
 
 17. (2p) Make a plot of the observed chi-square statistics against the inbreeding coefficient ($\hat{f}$). What do you observe? Can you give an equation that relates the two statistics? 
 

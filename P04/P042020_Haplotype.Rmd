@@ -12,15 +12,76 @@ output:
 Resolve the following exercise in groups of two students. Perform the computations and make the graphics that are asked for in the practical below. Take care to give each graph a title, and clearly label $x$ and $y$ axes, and to answer all questions asked. You can write your solution in a word or Latex document and generate a pdf file with your solution. Alternatively, you may generate a solution pdf file with Markdown. You can use R packages **genetics**, **haplo.stats**, **LDheatmap** and others for the computations. 
 Take care to number your answer exactly as in this exercise. Upload your solution in **pdf format** to the web page of the course at raco.fib.upc.edu  no later than the hand-in date.
 
+```{r dependencies, echo=FALSE}
+library('genetics')
+library('haplo.stats')
+library('LDheatmap')
+library('data.table')
+```
+
 1. Apolipoprotein E (APOE) is a protein involved in Alzheimer's disease. The corresponding gene _APOE_ has been mapped to chromosome 19. The file [APOE.dat](http://www-eio.upc.es/~jan/data/bsg/APOE.dat) contains genotype information of unrelated individuals for a set of SNPs in this gene. Load this data into the R environment. [APOE.zip](http://www-eio.upc.es/~jan/data/bsg/APOE.zip) contains the corresponding `.bim`, `.fam` and `.bed` files. You can use the `.bim` file to obtain information about the alleles of each polymorphism. 
+
+```{r 1st}
+apoe <- fread('APOE.dat', data.table=FALSE)
+rownames(apoe) <- apoe[,1]
+apoe <- apoe[,-c(1)]
+head(apoe)
+```
 
 2. (1p) How many individuals and how many SNPs are there in the database? What percentage of the data is missing? 
 
+```{r 2nd}
+n <- nrow(apoe)
+p <- ncol(apoe)
+cat(paste('There are', n, 'individuals and', p, 'SNPs in the database.\n'))
+
+missing_percentage <- 100*sum(as.integer(is.na(apoe)))/(n*p)
+cat(paste(missing_percentage, '% of data is missing.'))
+```
+
 3. (1p) Assuming all SNPs are bi-allelic, how many haplotypes can theoretically be found for this data set? 
+
+```{r 3rd}
+possible_haplotypes <- 2^p
+cat(paste('For bi-allelic SNPS, theoretically 2^', p, ' = ', format(possible_haplotypes, digits=3), ' haplotypes can be found for this data set.', sep=''))
+```
 
 4. (2p) Estimate haplotype frequencies using the haplo.stats package (set the minimum posterior probability to 0.001). How many haplotypes do you find? List the estimated probabilities in decreasing order. Which haplotype number is the most common?
 
+```{r em-function-preparation} 
+get_prepared_data <- function(data) {
+  prepared_data <- c()
+  for(i in 1:ncol(data)) {
+    prepared_data <- cbind(prepared_data, 
+                           substr(data[,i],1,1),
+                           substr(data[,i],3,3))
+  }
+  prepared_data
+}
+```
+
+```{r 4th}
+apoe_prepared <- get_prepared_data(apoe)
+haplo_estimation <- haplo.em(apoe_prepared,
+                             locus.label=colnames(apoe),
+                             control=haplo.em.control(min.posterior=1e-3))
+
+haplo_probs <- haplo_estimation$hap.prob
+haplo_num <- length(haplo_probs)
+cat(paste('Algorithm found', haplo_num, 'haplotypes.\n\n'))
+
+haplo_probs_ordered <- order(haplo_probs, decreasing=TRUE)
+cat('Estimated probabilities in decreasing order:\n')
+haplo_probs[haplo_probs_ordered]
+
+cat(paste('\nMost common is haplotype numbered ', haplo_probs_ordered[1], '.', sep=''))
+```
+
 5.  (2p) Is the haplotypic constitution of any of the individuals in the database ambiguous or uncertain?  For how many? What is the most likely haplotypic constitution of individual NA20763? (identify the constitution by the corresponding haplotype numbers).
+
+```{r 5th}
+
+```
 
 6. (1p) Suppose we would delete polymorphism rs374311741 from the database prior to haplotype estimation. Would this affect the results obtained? Justify your answer.
 

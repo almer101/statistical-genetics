@@ -26,13 +26,20 @@ Resolve the following exercise in groups of two students. Perform the computatio
 library(genetics)
 library(HardyWeinberg)
 library(data.table)
+
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("snpStats")
+#install.packages("LDheatmap")
+library(LDheatmap)
 ```
 
 2.  (1p) Load the `FOXP2.dat` file into the R environment. How many individuals and how many SNPs are there in the database? What percentage of the data is missing? 
 
 ```{r 2nd}
 
-dataset <- fread('FOXP2.dat', data.table=FALSE)
+dataset <- fread('./FOXP2.dat', data.table=FALSE)
 #head(dataset)
 
 cat(paste('Number of individuals:', nrow(dataset), '\n'))
@@ -65,17 +72,66 @@ for(i in 1:nrow(snp.alleles)) {
 }
 
 genotype.counts = MakeCounts(snp.dataset, marker.alleles, sep="/")
-genotype.counts
+genotype.counts = genotype.counts[,1:3]
 
-HWTernaryPlot(genotype_counts)
+HWTernaryPlot(genotype.counts)
+
+pvalues_chi <- HWChisqStats(genotype.counts, pvalues=TRUE)
+length(pvalues_chi)
+reject.num = sum(pvalues_chi < 0.05)
+
+cat(paste('We reject the H0 for', reject.num, 'variants.\n'))
 
 ```
 
 4. (1p) Using the function `LD` from the genetics package, compute the LD statistic $D$ for the SNPs rs34684677 and rs2894715 of the database. Is there significant association between the alleles of these two SNPs?
 
+```{r 4th}
+
+head(snp.dataset)
+snp1 = snp.dataset$rs34684677
+snp2 = snp.dataset$rs2894715
+snp1.g = genotype(snp1, sep = "/")
+snp2.g = genotype(snp2, sep = "/")
+LD(snp1.g, snp2.g)
+
+cat("The p-value is small enough so we reject the Equilibrium hypothesis, i.e. there exists some correlation between the 2 SNPs.")
+```
+
 5. (2p) Also compute the LD statistic $D$ for the SNPs rs34684677 and rs998302 of the database. Is there significant association between these two SNPs? Is there any reason why rs998302 could have stronger or weaker correlation than rs2894715?
 
+```{r 5th}
+
+snp1.g = genotype(snp.dataset$rs34684677, sep = "/")
+snp2.g = genotype(snp.dataset$rs998302, sep = "/")
+snp3.g = genotype(snp.dataset$rs2894715, sep = "/")
+
+table(snp1.g, snp2.g)
+table(snp1.g, snp3.g)
+
+out = LD(snp1.g, snp2.g)
+out$D
+out$`P-value`
+
+out = LD(snp1.g, snp3.g)
+out$D
+out$`P-value`
+```
+
+There is no statistically significant association between the SNPs `rs34684677` and `rs998302` whereas there is a significant association between markers `rs34684677` and `rs2894715`. 
+
 6. (2p) Given your previous estimate of $D$ for SNPs rs34684677 and rs2894715, infer the haplotype frequencies. Which haplotype is the most common? 
+
+```{r 6th}
+
+snp1.g = genotype(snp.dataset$rs34684677, sep = "/")
+snp3.g = genotype(snp.dataset$rs2894715, sep = "/")
+
+out = LD(snp1.g, snp3.g)
+out$D
+out$`P-value`
+
+```
 
 7.  (2p) Compute the LD statistics $R^2$ for all the marker pairs in this data base, using the `LD` function of the packages `genetics`. Be prepared that this make take a few minutes. Also compute an alternative estimate of $R^2$ obtained by using the `PLINK` program. For this purpose you should:
 
@@ -89,12 +145,154 @@ HWTernaryPlot(genotype_counts)
 
 - Make a scatter plot for R's LD estimates against PLINK's LD estimates. Are they identical or do they at least correlate? What's the difference between these two estimators? Which estimator would your prefer and why?
 
+```{r 7thP1}
+
+RES <- data.frame(genotype(snp.dataset[,1],sep="/"))
+
+for(i in 2:ncol(snp.dataset)) {
+   snp <- genotype(snp.dataset[,i],sep="/")
+   RES <- cbind(RES,snp)
+}
+
+```
+
+```{r 7thP2}
+
+#output <- LD(RES)
+#attributes(output)
+
+#Dm <- output$D
+#Dp <- output$"D'"
+#R2 <- output$"R^2"
+#X2 <- output$"X^2"
+
+Dm = read.table("Dm.txt")
+Dp = read.table("Dp.txt")
+R2 = read.table("R2.txt")
+X2 = read.table("X2.txt")
+
+#write.table(Dm, file="Dm.txt", row.names=FALSE, col.names=FALSE)
+#write.table(Dp, file="Dp.txt", row.names=FALSE, col.names=FALSE)
+#write.table(R2, file="R2.txt", row.names=FALSE, col.names=FALSE)
+#write.table(X2, file="X2.txt", row.names=FALSE, col.names=FALSE)
+
+R2.generated = read.table("FOXP2.ld")
+R2.generated
+for(i in 1:ncol(R2.generated)) {
+  for(j in 1:i) {
+    R2.generated[i,j] = NA
+  }
+}
+
+y = c(t(R2))
+y = y[!is.na(y)]
+
+x = c(t(R2.generated))
+x = x[!is.na(x)]
+
+plot(x,y)
+
+```
+
+There is not a significant difference between R's estimate and PLINK's estimate. We can see the high linear correlation (1-1 correlation) between the 2 estimators. If we had a structured dataset I would probably prefer to use PLINK because of its speed, but if the data is complex, R would be a better option although it is slower.
+
 8. (2p) Compute a distance matrix with the distance in base pairs between all possible pairs of SNPs, using the basepair position of each SNP given in the `.bim` file. Make a plot of R's $R^2$ statistics against the distance (expressed as the number of basepairs) between the markers. Comment on your results. 
+
+```{r 8th}
+
+D.basepairs = nrow(snp.dataset) * Dm
+D.basepairs
+
+#v = c(t(m))
+#v = v[!is.na(v)]
+#v
+
+x = c(t(D.basepairs))
+x = x[!is.na(x)]
+
+y = c(t(R2))
+y = y[!is.na(y)]
+
+plot(x,y, xlab = 'Basepair distance', ylab = 'R^2', main = 'Dependence of R^2 on basepair distance')
+
+```
+
+We see the quadratic behavior of R^2 with the minimum value when distance between base pairs reaches 0.0. This is an expected result because the R^2 really has a quadratic relationship with D.
 
 9. (2p) Make an LD heatmap of the markers in this database, using the $R^2$ statistic with the `LD` function. Make another heatmap obtained by filtering out all variants with a MAF below 0.35, and redoing the computations to obtain the $R^2$ statistics in R. Can you explain any differences observed between the two heatmaps?
 
+```{r 9th}
+
+rgb.palette <- colorRampPalette(rev(c("blue", "orange", "red")), space = "rgb")
+
+LDheatmap(RES,LDmeasure="r",color=rgb.palette(18))
+
+maf <- function(x){
+  x <- genotype(x,sep="/")
+  out <- summary(x)
+  af1 <- min(out$allele.freq[,2],na.rm=TRUE)
+  af1[af1==1] <- 0 
+  return(af1)
+}
+
+mafs = apply(snp.dataset, 2, maf)
+mask = mafs > 0.35
+
+snp.dataset.filtered = snp.dataset[,mask]
+
+RES.filtered <- data.frame(genotype(snp.dataset.filtered[,1],sep="/"))
+
+for(i in 2:ncol(snp.dataset.filtered)) {
+   snp <- genotype(snp.dataset.filtered[,i],sep="/")
+   RES.filtered <- cbind(RES.filtered,snp)
+}
+
+output.filtered <- LD(RES.filtered)
+
+Dm <- output.filtered$D
+Dp <- output.filtered$"D'"
+R2 <- output.filtered$"R^2"
+X2 <- output.filtered$"X^2"
+
+LDheatmap(RES.filtered,LDmeasure="r",color=rgb.palette(18))
+dim(RES.filtered)
+```
+
 10. (1p) Can you distinguish blocks of correlated markers in the area of the FOXP2 gene? How many blocks do you think that _at least_ seem to exist?
+
+The blocks of correlated markers are more to the red end of the color spectrum. 
+For filtered variants there should be at least 2400 pairs which are correlated. The red triangles divide the height in roughly 3 parts, and we have 3 halves of a square with side length of 119/3.
 
 11. (1p) Simulate independent SNPs under the assumption of Hardy-Weinberg equilibrium, using R's `sample` instruction `sample(c("AA","AB","BB"),n,replace=TRUE,prob=c(p*p,2*p*q,q*q)))`. Simulate as many SNPs as you have in your database, and take care to match each SNP in your database with a simulated SNP that has the same sample size and allele frequency. Make an LD heatmap of the simulated SNPs, using $R^2$ as your statistic. Compare the results with the LD heatmap of the FOXP2 region. What do you observe? State your conclusions.
 
+```{r 11th}
 
+sample.snp <- function(x) {
+  x.g = genotype(x, sep = "/")
+  out = summary(x.g)
+  p = out$allele.freq[1,2]
+  q = out$allele.freq[2,2]
+  A = out$allele.names[1]
+  B = out$allele.names[2]
+  AA = paste(A,A, sep = "/")
+  AB = paste(A,B, sep = "/")
+  BB = paste(B,B, sep = "/")
+  
+  return(sample(c(AA,AB,BB),n,replace=TRUE,prob=c(p*p,2*p*q,q*q)))
+}
+
+sample.dataset = data.frame(apply(snp.dataset, 2, sample.snp))
+head(snp.dataset)
+head(sample.dataset)
+
+
+RES.sample <- data.frame(genotype(sample.dataset[,1],sep="/"))
+
+for(i in 2:ncol(sample.dataset)) {
+   snp <- genotype(sample.dataset[,i],sep="/")
+   RES.sample <- cbind(RES.sample,snp)
+}
+
+LDheatmap(RES.sample,LDmeasure="r",color=rgb.palette(18))
+
+```

@@ -1,0 +1,608 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Practical 03 SG: Haplotype estimation},
+  pdfauthor={Lovro Katalinić and Ivan Almer},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{Practical 03 SG: Haplotype estimation}
+\author{Lovro Katalinić and Ivan Almer}
+\date{Hand-in: 05/12/2020}
+
+\begin{document}
+\maketitle
+
+Resolve the following exercise in groups of two students. Perform the
+computations and make the graphics that are asked for in the practical
+below. Take care to give each graph a title, and clearly label \(x\) and
+\(y\) axes, and to answer all questions asked. You can write your
+solution in a word or Latex document and generate a pdf file with your
+solution. Alternatively, you may generate a solution pdf file with
+Markdown. You can use R packages \textbf{genetics},
+\textbf{haplo.stats}, \textbf{LDheatmap} and others for the
+computations. Take care to number your answer exactly as in this
+exercise. Upload your solution in \textbf{pdf format} to the web page of
+the course at raco.fib.upc.edu no later than the hand-in date.
+
+\begin{verbatim}
+## Loading required package: combinat
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'combinat'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:utils':
+## 
+##     combn
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: gdata
+\end{verbatim}
+
+\begin{verbatim}
+## gdata: read.xls support for 'XLS' (Excel 97-2004) files ENABLED.
+\end{verbatim}
+
+\begin{verbatim}
+## 
+\end{verbatim}
+
+\begin{verbatim}
+## gdata: read.xls support for 'XLSX' (Excel 2007+) files ENABLED.
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'gdata'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:stats':
+## 
+##     nobs
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:utils':
+## 
+##     object.size
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:base':
+## 
+##     startsWith
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: gtools
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: MASS
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: mvtnorm
+\end{verbatim}
+
+\begin{verbatim}
+## 
+\end{verbatim}
+
+\begin{verbatim}
+## NOTE: THIS PACKAGE IS NOW OBSOLETE.
+\end{verbatim}
+
+\begin{verbatim}
+## 
+\end{verbatim}
+
+\begin{verbatim}
+##   The R-Genetics project has developed an set of enhanced genetics
+\end{verbatim}
+
+\begin{verbatim}
+##   packages to replace 'genetics'. Please visit the project homepage
+\end{verbatim}
+
+\begin{verbatim}
+##   at http://rgenetics.org for informtion.
+\end{verbatim}
+
+\begin{verbatim}
+## 
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'genetics'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     %in%, as.factor, order
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: arsenal
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'haplo.stats'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:genetics':
+## 
+##     locus
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'data.table'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:gdata':
+## 
+##     first, last
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Apolipoprotein E (APOE) is a protein involved in Alzheimer's disease.
+  The corresponding gene \emph{APOE} has been mapped to chromosome 19.
+  The file \href{http://www-eio.upc.es/~jan/data/bsg/APOE.dat}{APOE.dat}
+  contains genotype information of unrelated individuals for a set of
+  SNPs in this gene. Load this data into the R environment.
+  \href{http://www-eio.upc.es/~jan/data/bsg/APOE.zip}{APOE.zip} contains
+  the corresponding \texttt{.bim}, \texttt{.fam} and \texttt{.bed}
+  files. You can use the \texttt{.bim} file to obtain information about
+  the alleles of each polymorphism.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{apoe <-}\StringTok{ }\KeywordTok{fread}\NormalTok{(}\StringTok{'APOE.dat'}\NormalTok{, }\DataTypeTok{data.table=}\OtherTok{FALSE}\NormalTok{)}
+\KeywordTok{rownames}\NormalTok{(apoe) <-}\StringTok{ }\NormalTok{apoe[,}\DecValTok{1}\NormalTok{]}
+\NormalTok{apoe <-}\StringTok{ }\NormalTok{apoe[,}\OperatorTok{-}\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{)]}
+\CommentTok{#head(apoe)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  (1p) How many individuals and how many SNPs are there in the database?
+  What percentage of the data is missing?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n <-}\StringTok{ }\KeywordTok{nrow}\NormalTok{(apoe)}
+\NormalTok{p <-}\StringTok{ }\KeywordTok{ncol}\NormalTok{(apoe)}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'There are'}\NormalTok{, n, }\StringTok{'individuals and'}\NormalTok{, p, }\StringTok{'SNPs in the database.}\CharTok{\textbackslash{}n}\StringTok{'}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## There are 107 individuals and 162 SNPs in the database.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{missing_percentage <-}\StringTok{ }\DecValTok{100}\OperatorTok{*}\KeywordTok{sum}\NormalTok{(}\KeywordTok{as.integer}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(apoe)))}\OperatorTok{/}\NormalTok{(n}\OperatorTok{*}\NormalTok{p)}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(missing_percentage, }\StringTok{'% of data is missing.'}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 0 % of data is missing.
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  (1p) Assuming all SNPs are bi-allelic, how many haplotypes can
+  theoretically be found for this data set?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{possible_haplotypes <-}\StringTok{ }\DecValTok{2}\OperatorTok{^}\NormalTok{p}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'For bi-allelic SNPS, theoretically 2^'}\NormalTok{, p, }\StringTok{' = '}\NormalTok{, }\KeywordTok{format}\NormalTok{(possible_haplotypes, }\DataTypeTok{digits=}\DecValTok{3}\NormalTok{), }\StringTok{' haplotypes can be found for this data set.'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## For bi-allelic SNPS, theoretically 2^162 = 5.85e+48 haplotypes can be found for this data set.
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  (2p) Estimate haplotype frequencies using the haplo.stats package (set
+  the minimum posterior probability to 0.001). How many haplotypes do
+  you find? List the estimated probabilities in decreasing order. Which
+  haplotype number is the most common?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{get_prepared_data <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data) \{}
+\NormalTok{  prepared_data <-}\StringTok{ }\KeywordTok{c}\NormalTok{()}
+  \ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\KeywordTok{ncol}\NormalTok{(data)) \{}
+\NormalTok{    prepared_data <-}\StringTok{ }\KeywordTok{cbind}\NormalTok{(prepared_data, }
+                           \KeywordTok{substr}\NormalTok{(data[,i],}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{),}
+                           \KeywordTok{substr}\NormalTok{(data[,i],}\DecValTok{3}\NormalTok{,}\DecValTok{3}\NormalTok{))}
+\NormalTok{  \}}
+\NormalTok{  prepared_data}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{estimate_haplotypes <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data) \{}
+\NormalTok{  data_prepared <-}\StringTok{ }\KeywordTok{get_prepared_data}\NormalTok{(data)}
+\NormalTok{  haplo_estimation <-}\StringTok{ }\KeywordTok{haplo.em}\NormalTok{(data_prepared,}
+                               \DataTypeTok{locus.label=}\KeywordTok{colnames}\NormalTok{(data),}
+                               \DataTypeTok{control=}\KeywordTok{haplo.em.control}\NormalTok{(}\DataTypeTok{min.posterior=}\FloatTok{1e-3}\NormalTok{))}
+  
+\NormalTok{  haplos <-}\StringTok{ }\NormalTok{haplo_estimation}\OperatorTok{$}\NormalTok{haplotype}
+\NormalTok{  haplo_num <-}\StringTok{ }\KeywordTok{dim}\NormalTok{(haplos)[}\DecValTok{1}\NormalTok{]}
+  \KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'Algorithm found'}\NormalTok{, haplo_num, }\StringTok{'haplotypes.}\CharTok{\textbackslash{}n\textbackslash{}n}\StringTok{'}\NormalTok{))}
+  
+\NormalTok{  haplo_probs <-}\StringTok{ }\NormalTok{haplo_estimation}\OperatorTok{$}\NormalTok{hap.prob}
+\NormalTok{  haplo_probs_ordered <-}\StringTok{ }\KeywordTok{order}\NormalTok{(haplo_probs, }\DataTypeTok{decreasing=}\OtherTok{TRUE}\NormalTok{)}
+  \KeywordTok{cat}\NormalTok{(}\StringTok{'Estimated probabilities in decreasing order:}\CharTok{\textbackslash{}n}\StringTok{'}\NormalTok{)}
+  \KeywordTok{cat}\NormalTok{(haplo_probs[haplo_probs_ordered])}
+  \KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'}\CharTok{\textbackslash{}n\textbackslash{}n}\StringTok{Most common is haplotype numbered '}\NormalTok{, haplo_probs_ordered[}\DecValTok{1}\NormalTok{], }\StringTok{'.'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+  
+  \KeywordTok{return}\NormalTok{(haplo_estimation)}
+\NormalTok{\}}
+
+\NormalTok{apoe_haplos <-}\StringTok{ }\KeywordTok{estimate_haplotypes}\NormalTok{(apoe)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Algorithm found 31 haplotypes.
+## 
+## Estimated probabilities in decreasing order:
+## 0.3995055 0.1308411 0.07447912 0.06841314 0.05018155 0.04672897 0.03585747 0.03516129 0.02255473 0.02049558 0.01869159 0.01611634 0.008685949 0.007350522 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.00402587 0.003405876 0.003302145 0.00286891 0.002137585 0.001657989 0.0008097522
+## 
+## Most common is haplotype numbered 27.
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  (2p) Is the haplotypic constitution of any of the individuals in the
+  database ambiguous or uncertain? For how many? What is the most likely
+  haplotypic constitution of individual NA20763? (identify the
+  constitution by the corresponding haplotype numbers).
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{constitutions <-}\StringTok{ }\NormalTok{apoe_haplos}\OperatorTok{$}\NormalTok{nreps}
+\NormalTok{ambiguous <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(constitutions }\OperatorTok{>}\StringTok{ }\DecValTok{1}\NormalTok{)}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'There are '}\NormalTok{, ambiguous, }\StringTok{' ambigous haplotypic constituions of an individual.'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## There are 19 ambigous haplotypic constituions of an individual.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{individual_index <-}\StringTok{ }\KeywordTok{which}\NormalTok{(}\KeywordTok{rownames}\NormalTok{(apoe) }\OperatorTok{==}\StringTok{ 'NA20763'}\NormalTok{)}
+\NormalTok{most_likely_hc <-}\StringTok{ }\NormalTok{apoe_haplos}\OperatorTok{$}\NormalTok{hap1code[individual_index]}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'}\CharTok{\textbackslash{}n}\StringTok{Most likely haplotypic constitution of individual NA20763 is '}\NormalTok{, most_likely_hc, }\StringTok{'.'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Most likely haplotypic constitution of individual NA20763 is 8.
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  (1p) Suppose we would delete polymorphism rs374311741 from the
+  database prior to haplotype estimation. Would this affect the results
+  obtained? Justify your answer.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{apoe_without_polymorphism <-}\StringTok{ }\KeywordTok{subset}\NormalTok{(apoe, }\DataTypeTok{select=}\OperatorTok{-}\KeywordTok{c}\NormalTok{(rs374311741))}
+\NormalTok{apoe_without_polymorphism_haplo <-}\StringTok{ }\KeywordTok{estimate_haplotypes}\NormalTok{(apoe_without_polymorphism)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Algorithm found 31 haplotypes.
+## 
+## Estimated probabilities in decreasing order:
+## 0.3994985 0.1308411 0.07447842 0.06842063 0.05018152 0.04672897 0.03586333 0.03516137 0.02255615 0.02049562 0.01869159 0.01611606 0.008685775 0.007350739 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004672897 0.004025842 0.003400211 0.003302129 0.002868867 0.002137177 0.001658698 0.0008083391
+## 
+## Most common is haplotype numbered 27.
+\end{verbatim}
+
+Deleting one column from the database resulted in minor changes in
+haplotype probabilities, but the haplotype count stays the same.
+Intuitively one of 162 columns cannot have a significant influence on
+the whole result.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  (1p) Remove all genetic variants that have a minor allele frequency
+  below 0.10 from the database, and re-run \texttt{haplo.em}. How does
+  this affect the number of haplotypes?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{maf <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(x)\{}
+\NormalTok{  x <-}\StringTok{ }\KeywordTok{genotype}\NormalTok{(x,}\DataTypeTok{sep=}\StringTok{"/"}\NormalTok{)}
+\NormalTok{  out <-}\StringTok{ }\KeywordTok{summary}\NormalTok{(x)}
+\NormalTok{  af1 <-}\StringTok{ }\KeywordTok{min}\NormalTok{(out}\OperatorTok{$}\NormalTok{allele.freq[,}\DecValTok{2}\NormalTok{],}\DataTypeTok{na.rm=}\OtherTok{TRUE}\NormalTok{)}
+\NormalTok{  af1[af1}\OperatorTok{==}\DecValTok{1}\NormalTok{] <-}\StringTok{ }\DecValTok{0}
+\NormalTok{  af1}
+\NormalTok{\}}
+
+\NormalTok{mafs <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(apoe, }\DecValTok{2}\NormalTok{, maf)}
+\NormalTok{apoe_filtered <-}\StringTok{ }\NormalTok{apoe[, mafs }\OperatorTok{>}\StringTok{ }\FloatTok{0.10}\NormalTok{]}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'By filtering genetic variants that have MAF below 0.1, we reduced their number from '}\NormalTok{, p, }\StringTok{' to '}\NormalTok{, }\KeywordTok{dim}\NormalTok{(apoe_filtered)[}\DecValTok{2}\NormalTok{], }\StringTok{'.}\CharTok{\textbackslash{}n\textbackslash{}n}\StringTok{'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## By filtering genetic variants that have MAF below 0.1, we reduced their number from 162 to 21.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{apoe_filtered_haplo <-}\StringTok{ }\KeywordTok{estimate_haplotypes}\NormalTok{(apoe_filtered)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Algorithm found 8 haplotypes.
+## 
+## Estimated probabilities in decreasing order:
+## 0.6206356 0.1308411 0.1130093 0.07476636 0.03185051 0.01869159 0.005532668 0.004672897
+## 
+## Most common is haplotype numbered 8.
+\end{verbatim}
+
+The results changed dramatically when variants with minor alelle
+frequency below 0.10 were removed. With filtered dataset like this one,
+function \texttt{haplo.em} found 8 haplotypes.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  (2p) We could consider the newly created haplotypes in our last run of
+  \texttt{haplo.em} as the alleles of a new superlocus. Which is, under
+  the assumption of Hardy-Weinberg equilibrium, the most likely genotype
+  at this new locus? What is the probability of this genotype? Which
+  genotype is the second most likely, and what is its probability?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{haplotypes <-}\StringTok{ }\NormalTok{apoe_filtered_haplo}\OperatorTok{$}\NormalTok{haplotype}
+\NormalTok{haplotypes}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   rs892593 rs892594 rs2722659 rs2722660 rs2571147 rs2571148 rs34762924
+## 1        C        A         C         C         G         T          C
+## 2        C        G         C         C         G         T          C
+## 3        C        G         C         C         G         T          C
+## 4        C        G         C         C         G         T          C
+## 5        G        G         T         T         A         C          A
+## 6        G        G         T         T         A         C          A
+## 7        G        G         T         T         A         C          A
+## 8        G        G         T         T         A         C          A
+##   rs2571149 rs2722661 rs2571150 rs147663893 rs8102685 rs2571151 rs35570438
+## 1         T         A         G           C         T         G          A
+## 2         T         A         G           C         T         G          T
+## 3         T         A         G           T         T         G          T
+## 4         T         A         G           T         T         G          T
+## 5         C         G         T           C         C         T          T
+## 6         C         G         T           C         C         T          T
+## 7         C         G         T           T         C         G          T
+## 8         C         G         T           T         C         T          T
+##   rs2571152 rs2571153 rs2722662 rs35391606 rs2437014 rs2437013 rs2722664
+## 1         T         A         C          A         C         T         A
+## 2         T         A         C          A         C         T         A
+## 3         T         A         C          A         C         T         A
+## 4         T         C         C          A         C         T         A
+## 5         G         C         T          A         T         A         G
+## 6         G         C         T          C         T         A         G
+## 7         T         A         C          A         C         T         G
+## 8         G         C         T          C         T         A         G
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{superlocus <-}\StringTok{ }\KeywordTok{c}\NormalTok{()}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\KeywordTok{dim}\NormalTok{(haplotypes)[}\DecValTok{2}\NormalTok{]) \{}
+\NormalTok{  superlocus <-}\StringTok{ }\KeywordTok{paste}\NormalTok{(superlocus, haplotypes[,i], }\DataTypeTok{sep=}\StringTok{''}\NormalTok{)}
+\NormalTok{\}}
+\NormalTok{superlocus}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "CACCGTCTAGCTGATACACTA" "CGCCGTCTAGCTGTTACACTA" "CGCCGTCTAGTTGTTACACTA"
+## [4] "CGCCGTCTAGTTGTTCCACTA" "GGTTACACGTCCTTGCTATAG" "GGTTACACGTCCTTGCTCTAG"
+## [7] "GGTTACACGTTCGTTACACTG" "GGTTACACGTTCTTGCTCTAG"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(}\KeywordTok{genotype}\NormalTok{(superlocus, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Number of samples typed: 8 (100%)
+## 
+## Allele Frequency: (10 alleles)
+##                      Count Proportion
+## G                        4       0.25
+## C                        4       0.25
+## GTTACACGTTCTTGCTCTAG     1       0.06
+## GTTACACGTTCGTTACACTG     1       0.06
+## GTTACACGTCCTTGCTCTAG     1       0.06
+## GTTACACGTCCTTGCTATAG     1       0.06
+## GCCGTCTAGTTGTTCCACTA     1       0.06
+## GCCGTCTAGTTGTTACACTA     1       0.06
+## GCCGTCTAGCTGTTACACTA     1       0.06
+## ACCGTCTAGCTGATACACTA     1       0.06
+## 
+## 
+## Genotype Frequency:
+##                        Count Proportion
+## C/ACCGTCTAGCTGATACACTA     1       0.12
+## G/GTTACACGTTCTTGCTCTAG     1       0.12
+## G/GTTACACGTTCGTTACACTG     1       0.12
+## G/GTTACACGTCCTTGCTCTAG     1       0.12
+## G/GTTACACGTCCTTGCTATAG     1       0.12
+## C/GCCGTCTAGTTGTTCCACTA     1       0.12
+## C/GCCGTCTAGTTGTTACACTA     1       0.12
+## C/GCCGTCTAGCTGTTACACTA     1       0.12
+## 
+## Heterozygosity (Hu)  = 0.9
+## Poly. Inf. Content   = 0.8272705
+\end{verbatim}
+
+\end{document}

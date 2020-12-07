@@ -61,31 +61,78 @@ get_prepared_data <- function(data) {
 ```
 
 ```{r 4th}
-apoe_prepared <- get_prepared_data(apoe)
-haplo_estimation <- haplo.em(apoe_prepared,
-                             locus.label=colnames(apoe),
-                             control=haplo.em.control(min.posterior=1e-3))
+estimate_haplotypes <- function(data) {
+  data_prepared <- get_prepared_data(data)
+  haplo_estimation <- haplo.em(data_prepared,
+                               locus.label=colnames(data),
+                               control=haplo.em.control(min.posterior=1e-3))
+  
+  haplos <- haplo_estimation$haplotype
+  haplo_num <- dim(haplos)[1]
+  cat(paste('Algorithm found', haplo_num, 'haplotypes.\n\n'))
+  
+  haplo_probs <- haplo_estimation$hap.prob
+  haplo_probs_ordered <- order(haplo_probs, decreasing=TRUE)
+  cat('Estimated probabilities in decreasing order:\n')
+  cat(haplo_probs[haplo_probs_ordered])
+  cat(paste('\n\nMost common is haplotype numbered ', haplo_probs_ordered[1], '.', sep=''))
+  
+  return(haplo_estimation)
+}
 
-haplo_probs <- haplo_estimation$hap.prob
-haplo_num <- length(haplo_probs)
-cat(paste('Algorithm found', haplo_num, 'haplotypes.\n\n'))
-
-haplo_probs_ordered <- order(haplo_probs, decreasing=TRUE)
-cat('Estimated probabilities in decreasing order:\n')
-haplo_probs[haplo_probs_ordered]
-
-cat(paste('\nMost common is haplotype numbered ', haplo_probs_ordered[1], '.', sep=''))
+apoe_haplos <- estimate_haplotypes(apoe)
 ```
 
 5.  (2p) Is the haplotypic constitution of any of the individuals in the database ambiguous or uncertain?  For how many? What is the most likely haplotypic constitution of individual NA20763? (identify the constitution by the corresponding haplotype numbers).
 
 ```{r 5th}
+constitutions <- apoe_haplos$nreps
+ambiguous <- sum(constitutions > 1)
+cat(paste('There are ', ambiguous, ' ambigous haplotypic constituions of an individual.', sep=''))
 
+individual_index <- which(rownames(apoe) == 'NA20763')
+most_likely_hc <- apoe_haplos$hap1code[individual_index]
+cat(paste('\nMost likely haplotypic constitution of individual NA20763 is ', most_likely_hc, '.', sep=''))
 ```
 
 6. (1p) Suppose we would delete polymorphism rs374311741 from the database prior to haplotype estimation. Would this affect the results obtained? Justify your answer.
 
+```{r 6th}
+apoe_without_polymorphism <- subset(apoe, select=-c(rs374311741))
+apoe_without_polymorphism_haplo <- estimate_haplotypes(apoe_without_polymorphism)
+```
+
+Deleting one column from the database resulted in minor changes in haplotype probabilities, but the haplotype count stays the same. (justify)
+
 7. (1p) Remove all genetic variants that have a minor allele frequency below 0.10 from the database, and re-run `haplo.em`. How does this affect the number of haplotypes?
 
+```{r 7th}
+maf <- function(x){
+  x <- genotype(x,sep="/")
+  out <- summary(x)
+  af1 <- min(out$allele.freq[,2],na.rm=TRUE)
+  af1[af1==1] <- 0
+  af1
+}
+
+mafs <- apply(apoe, 2, maf)
+apoe_filtered <- apoe[, mafs > 0.10]
+cat(paste('By filtering genetic variants that have MAF below 0.1, we reduced their number from ', p, ' to ', dim(apoe_filtered)[2], '.\n\n', sep=''))
+
+apoe_filtered_haplo <- estimate_haplotypes(apoe_filtered)
+```
+
+The results changed dramatically when variants with minor alelle frequency below 0.10 were removed. With filtered dataset like this one, function `haplo.em` found 8 haplotypes.
+
 8. (2p) We could consider the newly created haplotypes in our last run of `haplo.em` as the alleles of a new superlocus. Which is, under the assumption of Hardy-Weinberg equilibrium, the most likely genotype at this new locus? What is the probability of this genotype? Which genotype is the second most likely, and what is its probability?
+
+```{r 8th}
+haplotypes <- apoe_filtered_haplo$haplotype
+superlocus <- c()
+for (i in 1:dim(haplotypes)[2]) {
+  superlocus <- paste(superlocus, haplotypes[,i], sep='')
+}
+superlocus
+summary(genotype(superlocus, sep=''))
+```
 

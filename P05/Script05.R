@@ -35,7 +35,7 @@ dim(X)
 
 X[1:5,1:5]
 
-install.packages("HardyWeinberg")
+#install.packages("HardyWeinberg")
 library(HardyWeinberg)
 
 ?recode

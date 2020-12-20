@@ -147,19 +147,7 @@ page of the course at raco.fib.upc.edu no later than the hand-in date.
 \end{verbatim}
 
 \begin{verbatim}
-## gdata: Unable to locate valid perl interpreter
-## gdata: 
-## gdata: read.xls() will be unable to read Excel XLS and XLSX files
-## gdata: unless the 'perl=' argument is used to specify the location of a
-## gdata: valid perl intrpreter.
-## gdata: 
-## gdata: (To avoid display of this message in the future, please ensure
-## gdata: perl is installed and available on the executable search path.)
-\end{verbatim}
-
-\begin{verbatim}
-## gdata: Unable to load perl libaries needed by read.xls()
-## gdata: to support 'XLX' (Excel 97-2004) files.
+## gdata: read.xls support for 'XLS' (Excel 97-2004) files ENABLED.
 \end{verbatim}
 
 \begin{verbatim}
@@ -167,18 +155,7 @@ page of the course at raco.fib.upc.edu no later than the hand-in date.
 \end{verbatim}
 
 \begin{verbatim}
-## gdata: Unable to load perl libaries needed by read.xls()
-## gdata: to support 'XLSX' (Excel 2007+) files.
-\end{verbatim}
-
-\begin{verbatim}
-## 
-\end{verbatim}
-
-\begin{verbatim}
-## gdata: Run the function 'installXLSXsupport()'
-## gdata: to automatically download and install the perl
-## gdata: libaries needed to support Excel XLS and XLSX formats.
+## gdata: read.xls support for 'XLSX' (Excel 2007+) files ENABLED.
 \end{verbatim}
 
 \begin{verbatim}
@@ -249,6 +226,37 @@ page of the course at raco.fib.upc.edu no later than the hand-in date.
 ## The following objects are masked from 'package:base':
 ## 
 ##     %in%, as.factor, order
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(HardyWeinberg)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: mice
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'mice'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:stats':
+## 
+##     filter
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     cbind, rbind
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: Rsolnp
 \end{verbatim}
 
 \begin{Shaded}
@@ -344,11 +352,11 @@ Alzheimer's disease. Load the data file into the R environment.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{mms <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'} \OperatorTok{&}\StringTok{ }\NormalTok{data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'mm'}\NormalTok{)}
-\NormalTok{Mms <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'} \OperatorTok{&}\StringTok{ }\NormalTok{data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'Mm'}\NormalTok{)}
-\NormalTok{MMs <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'} \OperatorTok{&}\StringTok{ }\NormalTok{data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'MM'}\NormalTok{)}
+\NormalTok{mms <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'} \OperatorTok{&}\StringTok{ }\NormalTok{data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'mm'}\NormalTok{) }\OperatorTok{/}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'mm'}\NormalTok{)}
+\NormalTok{Mms <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'} \OperatorTok{&}\StringTok{ }\NormalTok{data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'Mm'}\NormalTok{) }\OperatorTok{/}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'Mm'}\NormalTok{)}
+\NormalTok{MMs <-}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'} \OperatorTok{&}\StringTok{ }\NormalTok{data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'MM'}\NormalTok{) }\OperatorTok{/}\StringTok{ }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'MM'}\NormalTok{)}
 \NormalTok{number_of_alleles <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{)}
-\NormalTok{genotypes_distr <-}\StringTok{ }\KeywordTok{c}\NormalTok{(mms, Mms, MMs)}\OperatorTok{/}\NormalTok{ncases}
+\NormalTok{genotypes_distr <-}\StringTok{ }\KeywordTok{c}\NormalTok{(mms, Mms, MMs)}
 
 \KeywordTok{plot}\NormalTok{(number_of_alleles, genotypes_distr, }\DataTypeTok{main=}\StringTok{"Percentage of cases by genotype"}\NormalTok{, }\DataTypeTok{xlab=}\StringTok{"Number of M alleles"}\NormalTok{, }\DataTypeTok{ylab=}\StringTok{"Frequency of genotypes in cases"}\NormalTok{)}
 \KeywordTok{lines}\NormalTok{(number_of_alleles, genotypes_distr, }\DataTypeTok{col=}\StringTok{"gray"}\NormalTok{)}
@@ -357,9 +365,9 @@ Alzheimer's disease. Load the data file into the R environment.
 
 \includegraphics{P062020_Association_analysis_files/figure-latex/second-1.pdf}
 
-Considering this plot, we can say that genotype \emph{Mm} increases the
-risk of desease. If we compare alleles, we can observe that there are
-more cases with allele \emph{M} than \emph{m} .
+Considering this plot, we can observe that the individuals with more
+alleles \emph{M} has greater risk of disease than individuals with less
+such alleles.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -382,7 +390,18 @@ more cases with allele \emph{M} than \emph{m} .
 \NormalTok{allele_freq <-}\StringTok{ }\KeywordTok{rbind}\NormalTok{(}\KeywordTok{c}\NormalTok{(mcases, Mcases), }\KeywordTok{c}\NormalTok{(mcontrol, Mcontrol))}
 \KeywordTok{colnames}\NormalTok{(allele_freq) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"m"}\NormalTok{,}\StringTok{"M"}\NormalTok{)}
 \KeywordTok{rownames}\NormalTok{(allele_freq) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Cases"}\NormalTok{, }\StringTok{"Control"}\NormalTok{)}
+\NormalTok{(allele_freq)}
+\end{Highlighting}
+\end{Shaded}
 
+\begin{verbatim}
+##           m   M
+## Cases   451 567
+## Control 685 631
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \KeywordTok{chisq.test}\NormalTok{(allele_freq,}\DataTypeTok{correct=}\OtherTok{FALSE}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -395,11 +414,32 @@ more cases with allele \emph{M} than \emph{m} .
 ## X-squared = 13.797, df = 1, p-value = 0.0002037
 \end{verbatim}
 
-As the chi-squared statistic of 13.797 which corresponds to p-value
-0.0002037 exceeds the critical value, we reject the null hypothesis and
-conclude that the allele frequencies are biased at 95\% significance
-level. We say that there is enough evidence for different allele
-frequencies.
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{fisher.test}\NormalTok{(allele_freq)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Fisher's Exact Test for Count Data
+## 
+## data:  allele_freq
+## p-value = 0.0002368
+## alternative hypothesis: true odds ratio is not equal to 1
+## 95 percent confidence interval:
+##  0.6195641 0.8664957
+## sample estimates:
+## odds ratio 
+##  0.7328195
+\end{verbatim}
+
+As the chi-squared statistic of \textbf{13.797} which corresponds to
+p-value \textbf{0.0002037} exceeds the critical value, we reject the
+null hypothesis and conclude that the allele frequencies are biased at
+95\% significance level. We say that there is enough evidence for
+different allele frequencies. Fisher's Exact Test gave very similar
+results.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -411,19 +451,30 @@ frequencies.
   assumptions. Do you think the assumptions of the alleles test are met?
 \end{enumerate}
 
-The assumptions made by chi-squared test are \emph{random sampling},
-\emph{sufficiently large size of sample}, \emph{expected cell count
-greater than 5} and \emph{independence of the observations}.*
+The assumptions made by chi-squared test are \textbf{random sampling},
+\textbf{sufficiently large size of sample}, \textbf{expected cell count
+greater than 5} and \textbf{independence of the observations}. The
+chi-squared test also relies on HW equilibrium assumption. Sample size
+seems sufficiently large and expected cell count is great enough. We
+assume that observations are randomly sampled and independent. What left
+is to check if the variant is in HW equilibrium.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\DecValTok{000}
+\NormalTok{genotypes <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'mm'}\NormalTok{), }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'Mm'}\NormalTok{), }\KeywordTok{sum}\NormalTok{(data[,}\DecValTok{1}\NormalTok{] }\OperatorTok{==}\StringTok{ 'MM'}\NormalTok{))}
+\KeywordTok{names}\NormalTok{(genotypes) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"mm"}\NormalTok{,}\StringTok{"Mm"}\NormalTok{, }\StringTok{"MM"}\NormalTok{)}
+\KeywordTok{HWChisq}\NormalTok{(genotypes)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] 0
+## Chi-square test with continuity correction for Hardy-Weinberg equilibrium (autosomal)
+## Chi2 =  0.3546387 DF =  1 p-value =  0.551499 D =  5.45587 f =  -0.0187137
 \end{verbatim}
+
+Considering p-value is greater than critical value, we can not reject
+the null hypotesis which states that the variant is in equilibrium. So,
+we think assumptions of the alleles test are met
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -434,6 +485,34 @@ greater than 5} and \emph{independence of the observations}.*
   and number of M alleles. Report the test statistic, its reference
   distribution and the p-value of the test. Do you find evidence for
   association?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x <-}\StringTok{ }\KeywordTok{as.integer}\NormalTok{(data[,}\DecValTok{2}\NormalTok{] }\OperatorTok{==}\StringTok{ 'case'}\NormalTok{)}
+\NormalTok{y <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(data[,}\DecValTok{1}\NormalTok{], }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{sum}\NormalTok{(}\KeywordTok{unlist}\NormalTok{(}\KeywordTok{strsplit}\NormalTok{(x, }\DataTypeTok{split =} \StringTok{""}\NormalTok{)) }\OperatorTok{==}\StringTok{ 'M'}\NormalTok{))}
+
+\NormalTok{r <-}\StringTok{ }\KeywordTok{cor}\NormalTok{(x,y)}
+\NormalTok{A <-}\StringTok{ }\NormalTok{n}\OperatorTok{*}\NormalTok{(r}\OperatorTok{^}\DecValTok{2}\NormalTok{)}
+
+\NormalTok{pvalue <-}\StringTok{ }\KeywordTok{pchisq}\NormalTok{(A,}\DataTypeTok{df=}\DecValTok{1}\NormalTok{,}\DataTypeTok{lower.tail=}\OtherTok{FALSE}\NormalTok{)}
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'p-value:'}\NormalTok{, pvalue))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## p-value: 0.000177091650268061
+\end{verbatim}
+
+Armitage trend test produced p-value of \textbf{0.000177091} which is
+lower than critical p-value of \textbf{0.05}. We can reject the null
+hypotesis and say that there exist a trend and enough evidence for
+association.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
 \item
   (4p) Test for association between genotype and disease status by a
   logistic regression of disease status on genotype, treating the latter
@@ -442,5 +521,72 @@ greater than 5} and \emph{independence of the observations}.*
   of the genotypes with respect to base line genotype mm. Provide 95\%
   confidence intervals for these odds ratios.
 \end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{y <-}\StringTok{ }\NormalTok{x}
+\NormalTok{x <-}\StringTok{ }\KeywordTok{factor}\NormalTok{(data[,}\DecValTok{1}\NormalTok{])}
+
+\NormalTok{out.lm <-}\StringTok{ }\KeywordTok{glm}\NormalTok{(y}\OperatorTok{~}\NormalTok{x, }\DataTypeTok{family =} \KeywordTok{binomial}\NormalTok{(}\DataTypeTok{link =} \StringTok{"logit"}\NormalTok{))}
+\NormalTok{summ <-}\StringTok{ }\KeywordTok{summary}\NormalTok{(out.lm)}
+\NormalTok{summ}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = y ~ x, family = binomial(link = "logit"))
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1662  -1.0982  -0.9046   1.2587   1.4773  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)  -0.6821     0.1286  -5.303 1.14e-07 ***
+## xMm           0.4930     0.1528   3.227 0.001251 ** 
+## xMM           0.6556     0.1726   3.798 0.000146 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1598.7  on 1166  degrees of freedom
+## Residual deviance: 1582.7  on 1164  degrees of freedom
+## AIC: 1588.7
+## 
+## Number of Fisher Scoring iterations: 4
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{or <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(summ}\OperatorTok{$}\NormalTok{coefficients[,}\DecValTok{1}\NormalTok{])}
+\NormalTok{orl <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(summ}\OperatorTok{$}\NormalTok{coefficients[,}\DecValTok{1}\NormalTok{] }\OperatorTok{-}\StringTok{ }\FloatTok{1.96}\OperatorTok{*}\NormalTok{summ}\OperatorTok{$}\NormalTok{coefficients[,}\DecValTok{2}\NormalTok{])}
+\NormalTok{org <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(summ}\OperatorTok{$}\NormalTok{coefficients[,}\DecValTok{1}\NormalTok{] }\OperatorTok{+}\StringTok{ }\FloatTok{1.96}\OperatorTok{*}\NormalTok{summ}\OperatorTok{$}\NormalTok{coefficients[,}\DecValTok{2}\NormalTok{])}
+
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'Ratio of odds for diseas with Mm person and mm person: '}\NormalTok{, or[}\DecValTok{2}\NormalTok{], }\StringTok{' (95% confidence interval: ['}\NormalTok{, orl[}\DecValTok{2}\NormalTok{], }\StringTok{', '}\NormalTok{, org[}\DecValTok{2}\NormalTok{], }\StringTok{']}\CharTok{\textbackslash{}n}\StringTok{'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Ratio of odds for diseas with Mm person and mm person: 1.63719357565482 (95% confidence interval: [1.21355312605524, 2.20872308481317]
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{cat}\NormalTok{(}\KeywordTok{paste}\NormalTok{(}\StringTok{'Ratio of odds for diseas with MM person and mm person: '}\NormalTok{, or[}\DecValTok{3}\NormalTok{], }\StringTok{' (95% confidence interval: ['}\NormalTok{, orl[}\DecValTok{3}\NormalTok{], }\StringTok{', '}\NormalTok{, org[}\DecValTok{3}\NormalTok{], }\StringTok{']}\CharTok{\textbackslash{}n}\StringTok{'}\NormalTok{, }\DataTypeTok{sep=}\StringTok{''}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Ratio of odds for diseas with MM person and mm person: 1.92630898513217 (95% confidence interval: [1.37341886551983, 2.70177321672109]
+\end{verbatim}
+
+As we can see from the output of \textbf{summmary} of \textbf{glm}
+function, each one of the coefficients is significant and therefore
+which is enough evidence for association between genotype and disease
+status. We can also see the same results as from the plot in the second
+task, telling that allel \textbf{M} increases the risk for the disease.
 
 \end{document}

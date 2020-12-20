@@ -3,10 +3,10 @@ title: "Practical 06 BSG: Association analysis"
 author: "Lovro Katalinic and Ivan Almer"
 date: "Hand-in: 21/12/2020"
 output:
-  html_document: default
   pdf_document: 
     keep_tex: yes
     fig_crop: no
+  html_document: default
 ---
 
 In this practical we perform association tests for a binary disease indicator and a genetic polymorphism. Resolve the following exercise in groups of two students. Perform the computations and make the graphics that are asked for in the practical below. Take care to give each graph a title, and clearly label x and y axes, and to answer all questions asked. You can write your solution in a word or Latex document and generate a pdf file with your solution. Alternatively, you may generate a solution pdf file with Markdown. You can use R packages MASS, genetics, data.table and others for the computations. Take care to number your answer exactly as in this exercise, preferably by copying each requested item into your solution. Upload your solution to the web page of the course at raco.fib.upc.edu no later than the hand-in date.

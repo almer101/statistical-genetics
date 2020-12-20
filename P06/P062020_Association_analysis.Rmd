@@ -1,0 +1,116 @@
+---
+title: "Practical 06 BSG: Association analysis"
+author: "Lovro Katalinic and Ivan Almer"
+date: "Hand-in: 21/12/2020"
+output:
+  html_document: default
+  pdf_document: 
+    keep_tex: yes
+    fig_crop: no
+---
+
+In this practical we perform association tests for a binary disease indicator and a genetic polymorphism. Resolve the following exercise in groups of two students. Perform the computations and make the graphics that are asked for in the practical below. Take care to give each graph a title, and clearly label x and y axes, and to answer all questions asked. You can write your solution in a word or Latex document and generate a pdf file with your solution. Alternatively, you may generate a solution pdf file with Markdown. You can use R packages MASS, genetics, data.table and others for the computations. Take care to number your answer exactly as in this exercise, preferably by copying each requested item into your solution. Upload your solution to the web page of the course at raco.fib.upc.edu no later than the hand-in date.
+
+```{r dependencies, warning=FALSE}
+library(MASS)
+library(genetics)
+library(HardyWeinberg)
+library(data.table)
+```
+
+
+The file rs394221.dat contains genotype information, for cases and controls, of polymorphism rs394221, which is presumably related to Alzheimer’s disease. Load the data file into the R environment.
+
+1. (1p) What is the sample size? What is the number of cases and the number of controls? Construct the contingency table of genotype by case/control status.
+
+```{r first}
+data <- fread('rs394221.dat', data.table=FALSE, header = FALSE)
+n <- nrow(data)
+ncases <- sum(data[,2] == 'case')
+ncontrol <- n - ncases
+
+cat(paste('Number of rows:', n, '\n'))
+cat(paste('Number of cases:', ncases, '\n'))
+cat(paste('Number of controls:', ncontrol, '\n'))
+head(data)
+```
+
+2. (1p) Explore the data by plotting the percentage of cases as a function of the genotype, ordering the latter according to the number of M alleles. Which allele increases the risk of the disease?
+
+```{r second}
+mms <- sum(data[,2] == 'case' & data[,1] == 'mm') / sum(data[,1] == 'mm')
+Mms <- sum(data[,2] == 'case' & data[,1] == 'Mm') / sum(data[,1] == 'Mm')
+MMs <- sum(data[,2] == 'case' & data[,1] == 'MM') / sum(data[,1] == 'MM')
+number_of_alleles <- c(0,1,2)
+genotypes_distr <- c(mms, Mms, MMs)
+
+plot(number_of_alleles, genotypes_distr, main="Percentage of cases by genotype", xlab="Number of M alleles", ylab="Frequency of genotypes in cases")
+lines(number_of_alleles, genotypes_distr, col="gray")
+```
+
+Considering this plot, we can observe that the individuals with more alleles *M* has greater risk of disease than individuals with less such alleles.
+
+3. (2p) Test for equality of allele frequencies in cases and controls by doing an alleles test. Report the test statistic, its reference distribution, and the p-value of the test. Is there evidence for different allele frequencies?
+
+```{r third}
+mcases <- 2*sum(data[,2] == 'case' & data[,1] == 'mm') + sum(data[,2] == 'case' & data[,1] == 'Mm')
+Mcases <- 2*sum(data[,2] == 'case' & data[,1] == 'MM') + sum(data[,2] == 'case' & data[,1] == 'Mm')
+mcontrol <- 2*sum(data[,2] == 'control' & data[,1] == 'mm') + sum(data[,2] == 'control' & data[,1] == 'Mm')
+Mcontrol <- 2*sum(data[,2] == 'control' & data[,1] == 'MM') + sum(data[,2] == 'control' & data[,1] == 'Mm')
+
+allele_freq <- rbind(c(mcases, Mcases), c(mcontrol, Mcontrol))
+colnames(allele_freq) <- c("m","M")
+rownames(allele_freq) <- c("Cases", "Control")
+(allele_freq)
+
+chisq.test(allele_freq,correct=FALSE)
+fisher.test(allele_freq)
+```
+As the chi-squared statistic of **13.797** which corresponds to p-value **0.0002037** exceeds the critical value, we reject the null hypothesis and conclude that the allele frequencies are biased at 95% significance level. We say that there is enough evidence for different allele frequencies. Fisher's Exact Test gave very similar results.
+
+4. (2p) Which are the assumptions made by the alleles test? Perform and report any additional tests you consider adequate to verify the assumptions. Do you think the assumptions of the alleles test are met?
+
+The assumptions made by chi-squared test are **random sampling**, **sufficiently large size of sample**, **expected cell count greater than 5** and **independence of the observations**. The chi-squared test also relies on HW equilibrium assumption. Sample size seems sufficiently large and expected cell count is great enough. We assume that observations are randomly sampled and independent. What left is to check if the variant is in HW equilibrium.
+
+```{r forth}
+genotypes <- c(sum(data[,1] == 'mm'), sum(data[,1] == 'Mm'), sum(data[,1] == 'MM'))
+names(genotypes) <- c("mm","Mm", "MM")
+HWChisq(genotypes)
+```
+
+Considering p-value is greater than critical value, we can not reject the null hypotesis which states that the variant is in equilibrium. So, we think assumptions of the alleles test are met
+
+5. (2p) Perform the Armitage trend test for association between disease and number of M alleles. Report the test statistic, its reference distribution and the p-value of the test. Do you find evidence for association?
+
+```{r}
+x <- as.integer(data[,2] == 'case')
+y <- sapply(data[,1], function(x) sum(unlist(strsplit(x, split = "")) == 'M'))
+
+r <- cor(x,y)
+A <- n*(r^2)
+
+pvalue <- pchisq(A,df=1,lower.tail=FALSE)
+cat(paste('p-value:', pvalue))
+```
+Armitage trend test produced p-value of **0.000177091** which is lower than critical p-value of **0.05**. We can reject the null hypotesis and say that there exist a trend and enough evidence for association.
+
+6. (4p) Test for association between genotype and disease status by a logistic regression of disease status on genotype, treating the latter as categorical. Do you find significant evidence for association? Which allele increase the risk for the disease? Give the odds ratios of the genotypes with respect to base line genotype mm. Provide 95% confidence intervals for these odds ratios.
+
+```{r}
+y <- x
+x <- factor(data[,1])
+
+out.lm <- glm(y~x, family = binomial(link = "logit"))
+summ <- summary(out.lm)
+summ
+
+or <- exp(summ$coefficients[,1])
+orl <- exp(summ$coefficients[,1] - 1.96*summ$coefficients[,2])
+org <- exp(summ$coefficients[,1] + 1.96*summ$coefficients[,2])
+
+cat(paste('Ratio of odds for diseas with Mm person and mm person: ', or[2], ' (95% confidence interval: [', orl[2], ', ', org[2], ']\n', sep=''))
+cat(paste('Ratio of odds for diseas with MM person and mm person: ', or[3], ' (95% confidence interval: [', orl[3], ', ', org[3], ']\n', sep=''))
+```
+
+As we can see from the output of **summmary** of **glm** function, each one of the coefficients is significant and therefore which is enough evidence for association between genotype and disease status. We can also see the same results as from the plot in the second task, telling that allel **M** increases the risk for the disease. 
+
